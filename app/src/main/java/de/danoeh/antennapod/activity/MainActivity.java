@@ -41,7 +41,6 @@ import de.danoeh.antennapod.R;
 import de.danoeh.antennapod.event.EpisodeDownloadEvent;
 import de.danoeh.antennapod.event.FeedUpdateRunningEvent;
 import de.danoeh.antennapod.event.MessageEvent;
-import de.danoeh.antennapod.event.PlayerStatusEvent;
 import de.danoeh.antennapod.event.StreamingConfirmationEvent;
 import de.danoeh.antennapod.model.download.DownloadStatus;
 import de.danoeh.antennapod.net.download.service.feed.FeedUpdateManagerImpl;
@@ -584,7 +583,16 @@ public class MainActivity extends CastEnabledActivity implements NavigationToolb
         new RatingDialogManager(this).showIfNeeded();
         getOnBackPressedDispatcher().addCallback(this, openDefaultPageBackPressedCallback);
         getOnBackPressedDispatcher().addCallback(this, bottomSheetBackPressedCallback);
-        if (UserPreferences.isAutoPlayOnLaunch() && !autoResumePending) {
+        if (UserPreferences.isAutoPlayOnLaunch() && !autoResumePending
+                && PlaybackPreferences.getCurrentPlayerStatus() != PlaybackPreferences.PLAYER_STATUS_PLAYING) {
+            AudioManager audioManager = getSystemService(AudioManager.class);
+            if (!audioManager.isVolumeFixed()) {
+                int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                int targetVolume = Math.round(maxVolume * UserPreferences.getAutoPlayVolume());
+                if (audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) != targetVolume) {
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, 0);
+                }
+            }
             PlaybackController.bindToMedia3Service(this, controller -> {
                 if (!controller.isPlaying()) {
                     if (controller.getCurrentMediaItem() == null) {
@@ -725,17 +733,6 @@ public class MainActivity extends CastEnabledActivity implements NavigationToolb
                 })
                 .setNeutralButton(R.string.cancel_label, null)
                 .show();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(PlayerStatusEvent event) {
-        if (!autoResumePending
-                || PlaybackPreferences.getCurrentPlayerStatus() != PlaybackPreferences.PLAYER_STATUS_PLAYING) {
-            return;
-        }
-        autoResumePending = false;
-        PlaybackController.bindToMedia3Service(this, controller ->
-                controller.setVolume(UserPreferences.getAutoPlayVolume()));
     }
 
     private void handleNavIntent() {
