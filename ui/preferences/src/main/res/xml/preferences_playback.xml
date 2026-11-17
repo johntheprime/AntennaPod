@@ -27,6 +27,22 @@
                 search:ignore="true" />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/pref_app_start_category">
+        <SwitchPreferenceCompat
+                android:defaultValue="false"
+                android:enabled="true"
+                android:key="prefAutoPlayOnLaunch"
+                android:summary="@string/pref_auto_play_on_launch_sum"
+                android:title="@string/pref_auto_play_on_launch_title"/>
+        <de.danoeh.antennapod.ui.preferences.preference.MaterialListPreference
+                android:defaultValue="50"
+                android:dependency="prefAutoPlayOnLaunch"
+                android:entryValues="@array/auto_play_volume_values"
+                android:key="prefAutoPlayVolume"
+                android:summary="@string/pref_auto_play_volume_sum"
+                android:title="@string/pref_auto_play_volume_title"/>
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/playback_control">
         <Preference
                 android:key="prefPlaybackFastForwardDeltaLauncher"

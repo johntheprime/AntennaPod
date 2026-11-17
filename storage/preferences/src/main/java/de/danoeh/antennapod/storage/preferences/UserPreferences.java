@@ -81,6 +81,8 @@ public abstract class UserPreferences {
     public static final String PREF_PAUSE_ON_HEADSET_DISCONNECT = "prefPauseOnHeadsetDisconnect";
     public static final String PREF_UNPAUSE_ON_HEADSET_RECONNECT = "prefUnpauseOnHeadsetReconnect";
     public static final String PREF_UNPAUSE_ON_BLUETOOTH_RECONNECT = "prefUnpauseOnBluetoothReconnect";
+    public static final String PREF_AUTO_PLAY_ON_LAUNCH = "prefAutoPlayOnLaunch";
+    public static final String PREF_AUTO_PLAY_VOLUME = "prefAutoPlayVolume";
     public static final String PREF_HARDWARE_FORWARD_BUTTON = "prefHardwareForwardButton";
     public static final String PREF_HARDWARE_PREVIOUS_BUTTON = "prefHardwarePreviousButton";
     public static final String PREF_FOLLOW_QUEUE = "prefFollowQueue";
@@ -405,6 +407,14 @@ public abstract class UserPreferences {
 
     public static boolean isUnpauseOnBluetoothReconnect() {
         return prefs.getBoolean(PREF_UNPAUSE_ON_BLUETOOTH_RECONNECT, false);
+    }
+
+    public static boolean isAutoPlayOnLaunch() {
+        return prefs.getBoolean(PREF_AUTO_PLAY_ON_LAUNCH, false);
+    }
+
+    public static float getAutoPlayVolume() {
+        return Integer.parseInt(prefs.getString(PREF_AUTO_PLAY_VOLUME, "50")) / 100f;
     }
 
     public static int getHardwareForwardButton() {

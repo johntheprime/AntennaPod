@@ -516,6 +516,11 @@ public abstract class PlaybackController {
     }
 
     public static void bindToMedia3Service(Context context, Consumer<MediaController> consumer) {
+        bindToMedia3Service(context, consumer, true);
+    }
+
+    public static void bindToMedia3Service(Context context, Consumer<MediaController> consumer,
+                                           boolean releaseAfterConsumer) {
         SessionToken sessionToken = new SessionToken(context,
                 new ComponentName(context, Media3PlaybackService.class));
         ListenableFuture<MediaController> controllerFuture =
@@ -528,7 +533,7 @@ public abstract class PlaybackController {
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             } finally {
-                if (controller != null) {
+                if (controller != null && releaseAfterConsumer) {
                     controller.release();
                 }
             }

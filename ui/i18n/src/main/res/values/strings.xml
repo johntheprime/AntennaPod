@@ -511,6 +511,12 @@
     <string name="pref_pauseOnHeadsetDisconnect_title">Headphones or Bluetooth disconnect</string>
     <string name="pref_unpauseOnHeadsetReconnect_title">Headphones reconnect</string>
     <string name="pref_unpauseOnBluetoothReconnect_title">Bluetooth reconnect</string>
+    <string name="pref_app_start_category">App start</string>
+    <string name="pref_auto_play_on_launch_title">Play automatically on app start</string>
+    <string name="pref_auto_play_on_launch_sum">Resumes the last episode when you open the app</string>
+    <string name="pref_auto_play_volume_title">Volume on automatic start</string>
+    <string name="pref_auto_play_volume_sum">Adjusts the volume for automatic playback: %s</string>
+    <string name="pref_auto_play_volume_percent">%1$d%%</string>
     <string name="pref_stream_over_download_title">Prefer streaming</string>
     <string name="pref_stream_over_download_sum">Display stream button instead of download button in lists</string>
     <string name="pref_mobileUpdate_title">Mobile updates</string>

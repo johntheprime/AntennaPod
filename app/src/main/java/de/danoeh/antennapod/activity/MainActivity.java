@@ -41,6 +41,7 @@ import de.danoeh.antennapod.R;
 import de.danoeh.antennapod.event.EpisodeDownloadEvent;
 import de.danoeh.antennapod.event.FeedUpdateRunningEvent;
 import de.danoeh.antennapod.event.MessageEvent;
+import de.danoeh.antennapod.event.PlayerStatusEvent;
 import de.danoeh.antennapod.event.StreamingConfirmationEvent;
 import de.danoeh.antennapod.model.download.DownloadStatus;
 import de.danoeh.antennapod.net.download.service.feed.FeedUpdateManagerImpl;
@@ -48,6 +49,7 @@ import de.danoeh.antennapod.net.download.serviceinterface.DownloadServiceInterfa
 import de.danoeh.antennapod.net.download.serviceinterface.FeedUpdateManager;
 import de.danoeh.antennapod.net.common.NetworkUtils;
 import de.danoeh.antennapod.net.sync.serviceinterface.SynchronizationQueue;
+import de.danoeh.antennapod.playback.base.MediaItemAdapter;
 import de.danoeh.antennapod.playback.cast.CastEnabledActivity;
 import de.danoeh.antennapod.playback.service.PlaybackController;
 import de.danoeh.antennapod.storage.databasemaintenanceservice.DatabaseMaintenanceWorker;
@@ -114,6 +116,8 @@ public class MainActivity extends CastEnabledActivity implements NavigationToolb
     private OnBackPressedCallback openDefaultPageBackPressedCallback;
     private int lastTheme = 0;
     private Insets systemBarInsets = Insets.NONE;
+    private boolean autoResumePending;
+    private MediaController autoResumeController;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -267,6 +271,7 @@ public class MainActivity extends CastEnabledActivity implements NavigationToolb
                     DownloadServiceInterface.get().setCurrentDownloads(updatedEpisodes);
                     EventBus.getDefault().postSticky(new EpisodeDownloadEvent(updatedEpisodes));
                 });
+
     }
 
     @Override
@@ -579,6 +584,22 @@ public class MainActivity extends CastEnabledActivity implements NavigationToolb
         new RatingDialogManager(this).showIfNeeded();
         getOnBackPressedDispatcher().addCallback(this, openDefaultPageBackPressedCallback);
         getOnBackPressedDispatcher().addCallback(this, bottomSheetBackPressedCallback);
+        if (UserPreferences.isAutoPlayOnLaunch() && !autoResumePending) {
+            PlaybackController.bindToMedia3Service(this, controller -> {
+                if (!controller.isPlaying()) {
+                    if (controller.getCurrentMediaItem() == null) {
+                        long mediaId = PlaybackPreferences.getCurrentlyPlayingFeedMediaId();
+                        if (mediaId == PlaybackPreferences.NO_MEDIA_PLAYING) {
+                            return;
+                        }
+                        controller.setMediaItem(MediaItemAdapter.fromMediaIdStub(mediaId));
+                        controller.prepare();
+                    }
+                    autoResumePending = true;
+                    controller.play();
+                }
+            });
+        }
     }
 
     @Override
@@ -605,6 +626,7 @@ public class MainActivity extends CastEnabledActivity implements NavigationToolb
     @Override
     protected void onStop() {
         super.onStop();
+        autoResumePending = false;
         EventBus.getDefault().unregister(this);
     }
 
@@ -703,6 +725,17 @@ public class MainActivity extends CastEnabledActivity implements NavigationToolb
                 })
                 .setNeutralButton(R.string.cancel_label, null)
                 .show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(PlayerStatusEvent event) {
+        if (!autoResumePending
+                || PlaybackPreferences.getCurrentPlayerStatus() != PlaybackPreferences.PLAYER_STATUS_PLAYING) {
+            return;
+        }
+        autoResumePending = false;
+        PlaybackController.bindToMedia3Service(this, controller ->
+                controller.setVolume(UserPreferences.getAutoPlayVolume()));
     }
 
     private void handleNavIntent() {

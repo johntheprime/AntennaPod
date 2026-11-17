@@ -27,6 +27,7 @@ public class PlaybackPreferencesFragment extends AnimatedPreferenceFragment {
 
         setupPlaybackScreen();
         buildSmartMarkAsPlayedPreference();
+        buildAutoPlayVolumePreference();
     }
 
     @Override
@@ -111,6 +112,18 @@ public class PlaybackPreferencesFragment extends AnimatedPreferenceFragment {
                     entries[x] = res.getQuantityString(R.plurals.time_minutes_quantified, v, v);
                 }
             }
+        }
+        pref.setEntries(entries);
+    }
+
+    private void buildAutoPlayVolumePreference() {
+        final Resources res = getActivity().getResources();
+
+        ListPreference pref = findPreference(UserPreferences.PREF_AUTO_PLAY_VOLUME);
+        String[] values = res.getStringArray(R.array.auto_play_volume_values);
+        String[] entries = new String[values.length];
+        for (int x = 0; x < values.length; x++) {
+            entries[x] = res.getString(R.string.pref_auto_play_volume_percent, Integer.parseInt(values[x]));
         }
         pref.setEntries(entries);
     }
