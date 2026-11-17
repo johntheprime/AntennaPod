@@ -583,18 +583,17 @@ public class MainActivity extends CastEnabledActivity implements NavigationToolb
         new RatingDialogManager(this).showIfNeeded();
         getOnBackPressedDispatcher().addCallback(this, openDefaultPageBackPressedCallback);
         getOnBackPressedDispatcher().addCallback(this, bottomSheetBackPressedCallback);
-        if (UserPreferences.isAutoPlayOnLaunch() && !autoResumePending
-                && PlaybackPreferences.getCurrentPlayerStatus() != PlaybackPreferences.PLAYER_STATUS_PLAYING) {
-            AudioManager audioManager = getSystemService(AudioManager.class);
-            if (!audioManager.isVolumeFixed()) {
-                int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-                int targetVolume = Math.round(maxVolume * UserPreferences.getAutoPlayVolume());
-                if (audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) != targetVolume) {
-                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, 0);
-                }
-            }
+        if (UserPreferences.isAutoPlayOnLaunch() && !autoResumePending) {
             PlaybackController.bindToMedia3Service(this, controller -> {
                 if (!controller.isPlaying()) {
+                    AudioManager audioManager = getSystemService(AudioManager.class);
+                    if (!audioManager.isVolumeFixed()) {
+                        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                        int targetVolume = Math.round(maxVolume * UserPreferences.getAutoPlayVolume());
+                        if (audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) != targetVolume) {
+                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, 0);
+                        }
+                    }
                     if (controller.getCurrentMediaItem() == null) {
                         long mediaId = PlaybackPreferences.getCurrentlyPlayingFeedMediaId();
                         if (mediaId == PlaybackPreferences.NO_MEDIA_PLAYING) {
